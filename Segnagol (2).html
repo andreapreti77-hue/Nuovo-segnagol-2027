@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Segnagol</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f5f7;--card:#fff;--tx:#14181f;--mut:#6b7280;--pri:#1d6fe8;--ptx:#fff;--ok:#16a34a;--bad:#dc2626;--bd:#d9dde3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1318;--card:#1a2029;--tx:#eef1f5;--mut:#98a2b3;--pri:#4b8ff5;--ptx:#08111f;--ok:#22c55e;--bad:#f87171;--bd:#2c3542}}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;max-width:560px;margin-inline:auto;padding:12px}
+nav{display:flex;gap:8px;margin-bottom:12px}
+nav button{flex:1;padding:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font-size:16px;font-weight:600}
+nav button.on{background:var(--pri);color:var(--ptx);border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.top{display:flex;flex-direction:column-reverse;gap:12px;align-items:stretch}
+.tempo{position:relative;align-self:center;width:96px;text-align:center}
+#tdisp{margin-top:4px;background:#080a0d;border:2px solid #1d232c;border-radius:12px;padding:8px 0;display:flex;justify-content:center}
+#tdisp svg{height:42px;width:auto;display:block;transform:skewX(-6deg)}
+.tempo small,.lbl{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.tempo select{position:absolute;left:0;right:0;bottom:0;width:100%;height:62px;opacity:0;font-size:16px}
+.tempo select option{text-align:center}
+.clock{flex:none;text-align:center;font-family:"Orbitron",ui-monospace,"Courier New",monospace;font-size:clamp(56px,20vw,100px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;letter-spacing:.04em;color:#ff3b30;text-shadow:0 0 8px rgba(255,59,48,.75),0 0 22px rgba(255,59,48,.4);background:#080a0d;border:2px solid #1d232c;border-radius:14px;padding:16px 14px;display:block}
+#clk{display:block;width:100%}
+.parz{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.parz div{background:#080a0d;border:2px solid #1d232c;border-radius:12px;padding:6px 0 8px;text-align:center}
+.parz span{display:flex;justify-content:center;margin-top:4px}
+.parz svg{height:22px;width:auto;display:block;transform:skewX(-6deg)}
+.parz small{display:block;color:#8b95a5;font-size:10px;font-weight:400;letter-spacing:.05em}
+.parz .cur{border-color:#3b9dff;box-shadow:0 0 8px rgba(59,157,255,.45)}
+.seg{position:relative;display:grid;grid-template-columns:1fr 1fr;padding:4px;margin-bottom:10px;border:1px solid #232a34;border-radius:14px;background:#0d1117;box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
+.seg::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:10px;background:linear-gradient(180deg,#4aa8ff 0%,#1d6fe8 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 8px rgba(0,0,0,.45);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.seg[data-h="0"]::before{transform:translateX(100%)}
+.seg button{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 6px;border:0;border-radius:10px;background:transparent;color:#7d8899;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;transition:color .2s}
+.seg button.on{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.top+.row{margin-top:18px;margin-bottom:6px;gap:12px}
+#bStart,#bReset{padding:15px 8px;font-size:16px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border:0;border-radius:14px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);transition:transform .08s,box-shadow .08s}
+#bStart{background:linear-gradient(180deg,#38bdf8 0%,#0284c7 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #075985,0 8px 14px rgba(0,0,0,.22)}
+#bStart.run{background:linear-gradient(180deg,#fbbf24 0%,#d97706 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 0 #92400e,0 8px 14px rgba(0,0,0,.22)}
+#bReset{background:linear-gradient(180deg,#2b3038 0%,#0b0d10 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 4px 0 #000,0 8px 14px rgba(0,0,0,.28)}
+#bStart:active,#bReset:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 1px 0 rgba(0,0,0,.4),0 3px 6px rgba(0,0,0,.22)}
+.row{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;padding:12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:10px;font-size:16px;font-weight:600}
+.btn.pri{background:var(--pri);color:var(--ptx);border-color:var(--pri)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.gol{display:flex;align-items:center;justify-content:center;gap:14px;width:100%;padding:24px;font-size:32px;font-weight:800;letter-spacing:.14em;border:0;border-radius:18px;color:#fff;background:linear-gradient(180deg,#2bd46a 0%,#15803d 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 0 #0f5f2c,0 12px 20px rgba(0,0,0,.25);text-shadow:0 1px 2px rgba(0,0,0,.35);margin-bottom:20px;transition:transform .08s,box-shadow .08s}
+.gol:active{transform:translateY(5px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 0 #0f5f2c,0 4px 8px rgba(0,0,0,.25)}
+.gol.opp{font-size:15px;padding:15px;letter-spacing:.12em;margin-bottom:18px;background:linear-gradient(180deg,#f05252 0%,#b91c1c 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 0 #7f1d1d,0 8px 14px rgba(0,0,0,.22)}
+.gol.opp:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 1px 0 #7f1d1d,0 3px 6px rgba(0,0,0,.22)}
+.g .n.opp{background:var(--bad);color:#fff;font-size:12px}
+.score{background:#080a0d;border:2px solid #1d232c;border-radius:12px;padding:6px 6px 9px;text-align:center;margin:0 0 8px}
+#totC{display:block;margin:5px auto 0}
+.score small{display:block;color:#8b95a5;font-size:10px;font-weight:400;letter-spacing:.05em}
+.tot{font-size:14px;color:var(--mut);margin:0 0 8px}
+.g{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--bd)}
+.g:first-of-type{border-top:0}
+.g .n{width:38px;height:38px;border-radius:50%;background:var(--pri);color:var(--ptx);display:grid;place-items:center;font-weight:700}
+.g .i{flex:1}.g .i b{display:block}.g .i span{color:var(--mut);font-size:13px}
+.g button{border:1px solid var(--bd);background:var(--bg);color:var(--bad);font-size:13px;font-weight:600;border-radius:8px;padding:8px 10px}
+.g.void{opacity:.65}
+.g.void .i b,.g.void .i span{text-decoration:line-through}
+.g.void button{color:var(--tx)}
+.tag{display:block;font-style:normal;color:var(--bad);font-weight:700;font-size:12px;letter-spacing:.05em}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:20;padding-top:env(safe-area-inset-top,0px)}
+.ov.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));max-height:100%;overflow-y:auto}
+.sheet h2{margin:0 0 4px;font-size:18px}
+.sel{margin:0 0 10px;color:var(--mut);min-height:22px}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ogrow{display:flex;gap:8px;margin-bottom:10px}
+.og{padding:12px 4px;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+#bOg2.on{background:var(--ok);color:#fff;border-color:var(--ok)}
+.og.on{background:var(--bad);color:#fff;border-color:var(--bad)}
+.key{padding:12px 4px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:12px;font-size:24px;font-weight:700}
+.key small{display:block;font-size:11px;font-weight:400;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:14px}
+.key.on{background:var(--pri);color:var(--ptx);border-color:var(--pri)}
+.key.on small{color:var(--ptx)}
+.dist{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.dist .num{width:40px;text-align:center;font-weight:700;color:var(--mut)}
+.dist input{flex:1;padding:10px;font-size:16px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+.hide{display:none}
+</style>
+</head>
+<body>
+<nav>
+  <button id="tPartita" class="on">Partita</button>
+  <button id="tDistinta">Distinta</button>
+</nav>
+
+<section id="vPartita">
+  <div class="card">
+    <div class="top">
+      <div class="tempo"><small>Tempo</small>
+        <div id="tdisp"></div><select id="tempo"><option value="1">1°</option><option value="2">2°</option><option value="3">3°</option><option value="4">4°</option></select>
+      </div>
+      <div class="clock"><canvas id="clk"></canvas></div>
+    </div>
+    <div class="row">
+      <button class="btn pri" id="bStart">Avvia</button>
+      <button class="btn" id="bReset">Azzera</button>
+    </div>
+  </div>
+
+  <button class="gol" id="bGol"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z" fill="currentColor"/><path d="M12 7V2M16 10l5-1.5M14.5 14.5l3 4M9.5 14.5l-3 4M8 10L3 8.5"/></svg><span>GOL</span></button>
+  <button class="gol opp" id="bOpp">GOL AVVERSARIO</button>
+
+  <div class="card">
+    <div class="seg" id="seg" data-h="1"><button data-h="1"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Casa</button><button data-h="0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>Trasferta</button></div>
+    <div class="score" id="tot"><small id="totL">Totale</small><canvas id="totC"></canvas></div>
+    <div class="parz" id="parz"></div>
+    <div id="lista"></div>
+  </div>
+  <button class="btn" id="bNuova" style="width:100%">Nuova partita</button>
+  <button class="btn pri" id="bTxt" style="width:100%;margin-top:8px">Salva come testo</button>
+</section>
+
+<section id="vDistinta" class="hide">
+  <div class="card">
+    <p class="lbl" style="margin:0 0 10px">Distinta: numeri e nomi</p>
+    <div id="dist"></div>
+  </div>
+</section>
+
+<div class="ov" id="ovTxt">
+  <div class="sheet">
+    <h2>Tabellino</h2>
+    <p class="sel">Copia il testo o condividilo per salvarlo (per esempio nelle Note o in un messaggio).</p>
+    <textarea id="txt" readonly style="width:100%;height:42vh;padding:10px;font:14px ui-monospace,Menlo,monospace;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);margin-bottom:10px"></textarea>
+    <div class="row">
+      <button class="btn pri" id="bCopia">Copia</button>
+      <button class="btn" id="bShare">Condividi</button>
+      <button class="btn" id="bChiudi">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov">
+  <div class="sheet">
+    <h2 id="ovT">Chi ha segnato?</h2>
+    <p class="sel" id="ovS"></p>
+    <div class="ogrow"><button class="btn og" id="bOg" type="button">Autogol nostro</button><button class="btn og" id="bOg2" type="button">Autogol avversario</button></div>
+    <div class="keys" id="keys"></div>
+    <div class="row">
+      <button class="btn" id="bAnn">Annulla</button>
+      <button class="btn ok" id="bConf" disabled>Conferma</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var KEY="segnagol-v1";
+var S={roster:{},goals:[],period:1,elapsed:0,startedAt:null};
+try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(p&&typeof p==="object")S=Object.assign(S,p);}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+var $=function(i){return document.getElementById(i)};
+
+function ms(){return S.elapsed+(S.startedAt?Date.now()-S.startedAt:0)}
+function fmt(t){var s=Math.floor(t/1000);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+function tick(){drawClock(fmt(ms()))}
+var FNT={"0":["01110","10001","10011","10101","11001","10001","01110"],"1":["00100","01100","00100","00100","00100","00100","01110"],"2":["01110","10001","00001","00010","00100","01000","11111"],"3":["11110","00001","00001","01110","00001","00001","11110"],"4":["00010","00110","01010","10010","11111","00010","00010"],"5":["11111","10000","11110","00001","00001","10001","01110"],"6":["00110","01000","10000","11110","10001","10001","01110"],"7":["11111","00001","00010","00100","01000","01000","01000"],"8":["01110","10001","10001","01110","10001","10001","01110"],"9":["01110","10001","10001","01111","00001","00010","01100"],":":["0","0","1","0","1","0","0"]};
+FNT["-"]=["000","000","000","111","000","000","000"];
+function segSvg(t){
+  t=String(t);
+  var P={a:"10,5 15,0 45,0 50,5 45,10 15,10",g:"10,50 15,45 45,45 50,50 45,55 15,55",d:"10,95 15,90 45,90 50,95 45,100 15,100",f:"5,7 10,12 10,42 5,47 0,42 0,12",e:"5,53 10,58 10,88 5,93 0,88 0,58",b:"55,7 60,12 60,42 55,47 50,42 50,12",c:"55,53 60,58 60,88 55,93 50,88 50,58"};
+  var M={"0":"abcdef","1":"bc","2":"abged","3":"abgcd","4":"fgbc","5":"afgcd","6":"afgedc","7":"abc","8":"abcdefg","9":"abcdfg","-":"g"};
+  var s='<svg viewBox="-4 -3 '+(t.length*72-4)+' 106" aria-hidden="true">',i,k;
+  for(i=0;i<t.length;i++){
+    var m=M[t[i]]||"";
+    s+='<g transform="translate('+(i*72)+',0)">';
+    for(k in P){var on=m.indexOf(k)>-1;s+='<polygon points="'+P[k]+'" fill="'+(on?"#d6ecff":"#1b2028")+'"'+(on?' style="filter:drop-shadow(0 0 3px rgba(150,200,255,.7))"':'')+'/>'}
+    s+='</g>';
+  }
+  return s+'</svg>';
+}
+var cv=$("clk");
+function drawDots(c,t,o){
+  var x2=c.getContext("2d"),dpr=window.devicePixelRatio||1,cols=-1,i,r,k;
+  for(i=0;i<t.length;i++)cols+=FNT[t[i]][0].length+1;
+  var w=o.pitch?Math.min(cols*o.pitch,(c.parentNode.clientWidth||9999)-24):c.clientWidth;
+  if(!w)return;
+  var key=t+"|"+w+"|"+o.on;if(c._k===key)return;c._k=key;
+  var p=w/cols,h=p*7;
+  if(o.pitch)c.style.width=w+"px";
+  c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.height=h+"px";
+  x2.setTransform(dpr,0,0,dpr,0,0);x2.clearRect(0,0,w,h);
+  var x=0;
+  for(i=0;i<t.length;i++){
+    var g=FNT[t[i]];
+    for(r=0;r<7;r++)for(k=0;k<g[r].length;k++){
+      var on=g[r][k]==="1";
+      x2.beginPath();x2.arc((x+k+.5)*p,(r+.5)*p,p*.38,0,6.2832);
+      x2.shadowColor=o.glow;x2.shadowBlur=on?p*.9:0;
+      x2.fillStyle=on?o.on:o.off;x2.fill();
+    }
+    x+=g[0].length+1;
+  }
+}
+function drawClock(t){drawDots(cv,t,{on:"#ff4a3d",off:"#2b100e",glow:"#ff3b30"})}
+setInterval(tick,250);
+
+function name(n){return (S.roster[n]||"").trim()}
+
+function render(){
+  $("tempo").value=S.period;
+  $("tdisp").innerHTML=segSvg(S.period);
+  $("bStart").textContent=S.startedAt?"Pausa":"Avvia";
+  $("bStart").classList.toggle("run",!!S.startedAt);
+  tick();
+  var H=S.home!==false;var mine=S.goals.filter(function(g){return !g.opp&&!g.void}).length,theirs=S.goals.filter(function(g){return g.opp&&!g.void}).length;
+  $("totL").textContent="Totale ("+(H?"noi – avversari":"avversari – noi")+")";
+  drawDots($("totC"),(H?mine+"-"+theirs:theirs+"-"+mine),{pitch:6,on:"#3b9dff",off:"#0b1626",glow:"#3b9dff"});
+  var ph="";
+  for(var q=1;q<=4;q++){var a=0,b=0;S.goals.forEach(function(g){if(g.period===q&&!g.void){if(g.opp)b++;else a++}});
+    ph+='<div'+(q===S.period?' class="cur"':'')+'><small>'+q+'° tempo</small>'+'<span>'+segSvg((H?a:b)+"-"+(H?b:a))+'</span></div>';}
+  $("parz").innerHTML=ph;
+  $("seg").dataset.h=H?"1":"0";
+  Array.prototype.forEach.call($("seg").children,function(x){x.classList.toggle("on",(x.dataset.h==="1")===H)});
+  var h="";
+  if(!S.goals.length)h='<p class="tot">Nessun gol ancora.</p>';
+  S.goals.forEach(function(g,i){
+    var who=g.ogOpp?'<div class="n" style="font-size:12px">AUT</div><div class="i"><b>Autogol avversario</b>':g.og?'<div class="n opp">'+g.num+'</div><div class="i"><b>Autogol '+(esc(name(g.num))||"n. "+g.num)+'</b>':g.opp?'<div class="n opp">AVV</div><div class="i"><b>Gol avversario</b>':'<div class="n">'+g.num+'</div><div class="i"><b>'+(esc(name(g.num))||"Giocatore "+g.num)+'</b>';
+    h+='<div class="g'+(g.void?' void':'')+'">'+who+'<span>'+g.period+'° tempo, '+g.min+'’ ('+g.clock+')</span>'+(g.void?'<em class="tag">ANNULLATO</em>':'')+'</div><button data-i="'+i+'">'+(g.void?'Ripristina':'Rettifica')+'</button></div>';
+  });
+  $("lista").innerHTML=h;
+}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+$("tempo").onchange=function(){
+  S.period=+this.value;S.elapsed=0;S.startedAt=null;save();render();
+};
+$("bStart").onclick=function(){
+  if(S.startedAt){S.elapsed=ms();S.startedAt=null}else{S.startedAt=Date.now()}
+  save();render();
+};
+$("bReset").onclick=function(){
+  if(confirm("Azzerare il cronometro?")){S.elapsed=0;S.startedAt=null;save();render()}
+};
+$("lista").onclick=function(e){
+  var b=e.target.closest("button");if(!b)return;
+  var g=S.goals[+b.dataset.i];if(!g)return;
+  if(g.void){g.void=false;save();render()}else if(confirm("Annullare questo gol?")){g.void=true;save();render()}
+};
+$("bNuova").onclick=function(){
+  if(confirm("Cancellare tutti i gol e azzerare la partita? La distinta resta.")){
+    S.goals=[];S.period=1;S.elapsed=0;S.startedAt=null;save();render();
+  }
+};
+
+// GOL
+var snap=null,pick=null,og="";
+function keys(){
+  var h="";
+  for(var n=1;n<=20;n++){
+    h+='<button class="key'+(pick===n?" on":"")+'" data-n="'+n+'">'+n+'<small>'+esc(name(n))+'</small></button>';
+  }
+  $("keys").innerHTML=h;
+  $("bOg").classList.toggle("on",og==="own");$("bOg2").classList.toggle("on",og==="opp");
+  $("ovS").textContent=og==="opp"?"Autogol avversario: il gol viene assegnato a noi. Premi Conferma.":pick?((og==="own"?"Autogol di ":"Selezionato: ")+pick+(name(pick)?" – "+name(pick):"")):(og==="own"?"Tocca il numero di chi ha fatto autogol":"Tocca il numero del marcatore");
+  $("bConf").disabled=!(pick||og==="opp");
+}
+$("bGol").onclick=function(){
+  var t=ms();
+  og="";snap={period:S.period,min:Math.floor(t/60000)+1,clock:fmt(t)};
+  pick=null;
+  $("ovT").textContent="Gol al "+snap.min+"’ del "+snap.period+"° tempo";
+  keys();$("ov").classList.add("on");
+};
+$("bOpp").onclick=function(){
+  var t=ms();
+  S.goals.push({opp:true,period:S.period,min:Math.floor(t/60000)+1,clock:fmt(t)});
+  save();render();
+};
+$("bOg").onclick=function(){og=og==="own"?"":"own";keys()};
+$("bOg2").onclick=function(){og=og==="opp"?"":"opp";pick=null;keys()};
+$("keys").onclick=function(e){
+  var b=e.target.closest(".key");if(!b)return;
+  if(og==="opp")return;pick=+b.dataset.n;keys();
+};
+$("bAnn").onclick=function(){$("ov").classList.remove("on");snap=null;pick=null};
+$("bConf").onclick=function(){
+  if((!pick&&og!=="opp")||!snap)return;
+  var gg={num:pick,period:snap.period,min:snap.min,clock:snap.clock};if(og==="opp"){gg={period:snap.period,min:snap.min,clock:snap.clock,og:true,ogOpp:true}}else if(og){gg.opp=true;gg.og=true}S.goals.push(gg);
+  save();$("ov").classList.remove("on");snap=null;pick=null;render();
+};
+
+// Distinta
+function buildDist(){
+  var h="";
+  for(var n=1;n<=20;n++){
+    h+='<div class="dist"><span class="num">'+n+'</span><input data-n="'+n+'" placeholder="Nome giocatore" value="'+esc(S.roster[n]||"")+'"></div>';
+  }
+  $("dist").innerHTML=h;
+}
+$("dist").oninput=function(e){
+  var i=e.target;if(!i.dataset.n)return;
+  S.roster[i.dataset.n]=i.value;save();
+};
+
+function makeText(){
+  var H=S.home!==false,mine=0,theirs=0,per=[0,0,0,0,0],perO=[0,0,0,0,0],sc={},o=[];
+  S.goals.forEach(function(g){if(g.void)return;if(g.opp){theirs++;perO[g.period]++}else{mine++;per[g.period]++;if(!g.ogOpp)sc[g.num]=(sc[g.num]||0)+1}});
+  o.push("TABELLINO DELLA PARTITA");
+  o.push(new Date().toLocaleDateString("it-IT"));
+  o.push("Sede: "+(H?"Casa":"Trasferta"));o.push("");
+  o.push("Risultato totale: "+(H?mine+" - "+theirs+" (noi - avversari)":theirs+" - "+mine+" (avversari - noi)"));
+  for(var q=1;q<=4;q++)o.push(q+"° tempo: "+(H?per[q]+" - "+perO[q]:perO[q]+" - "+per[q]));
+  o.push("");o.push("CRONOLOGIA GOL");
+  if(!S.goals.length)o.push("Nessun gol.");
+  S.goals.forEach(function(g){
+    var who=g.ogOpp?"Autogol avversario":g.og?"Autogol di N. "+g.num+(name(g.num)?" "+name(g.num):""):g.opp?"Gol avversario":"N. "+g.num+(name(g.num)?" "+name(g.num):"");
+    o.push(g.period+"° tempo, "+g.min+"' - "+who+(g.void?" [ANNULLATO]":""));
+  });
+  o.push("");o.push("MARCATORI");
+  var ks=Object.keys(sc).map(Number).sort(function(a,b){return a-b});
+  if(!ks.length)o.push("Nessun marcatore.");
+  ks.forEach(function(n){o.push("N. "+n+(name(n)?" "+name(n):"")+": "+sc[n]+" gol")});
+  o.push("");o.push("CONVOCATI");
+  var any=false;
+  for(var n=1;n<=20;n++){if(name(n)){any=true;o.push("N. "+n+"  "+name(n))}}
+  if(!any)o.push("Distinta non compilata.");
+  return o.join("\n");
+}
+function showText(){
+  $("txt").value=makeText();
+  $("bShare").style.display=navigator.share?"":"none";
+  $("ovTxt").classList.add("on");
+}
+$("bTxt").onclick=function(){
+  if(DL){
+    DL.save({filename:"tabellino-"+new Date().toISOString().slice(0,10)+".txt",data:makeText()}).catch(function(e){if(!e||e.code!=="declined")showText()});
+  }else showText();
+};
+$("bCopia").onclick=function(){
+  var t=$("txt");
+  function fb(){t.focus();t.select();try{document.execCommand("copy")}catch(e){}}
+  try{navigator.clipboard.writeText(t.value).catch(fb)}catch(e){fb()}
+  $("bCopia").textContent="Copiato";setTimeout(function(){$("bCopia").textContent="Copia"},1500);
+};
+$("bShare").onclick=function(){
+  try{navigator.share({title:"Tabellino",text:$("txt").value}).catch(function(){})}catch(e){}
+};
+$("bChiudi").onclick=function(){$("ovTxt").classList.remove("on")};
+$("seg").onclick=function(e){var b=e.target.closest("button");if(!b)return;S.home=b.dataset.h==="1";save();render()};
+
+// Download testo
+var DL=null;
+try{if(window.claude&&window.claude.use){window.claude.use("downloads").then(function(d){DL=d;}).catch(function(){})}}catch(e){}
+
+// Navigazione
+function show(v){
+  var d=v==="distinta";
+  $("vPartita").classList.toggle("hide",d);
+  $("vDistinta").classList.toggle("hide",!d);
+  $("tPartita").classList.toggle("on",!d);
+  $("tDistinta").classList.toggle("on",d);
+  if(!d)render();
+}
+$("tPartita").onclick=function(){location.hash="partita"};
+$("tDistinta").onclick=function(){location.hash="distinta"};
+function route(){show(location.hash==="#distinta"?"distinta":"partita")}
+window.addEventListener("hashchange",route);
+
+buildDist();render();route();
+})();
+</script>
+</body>
+</html>
